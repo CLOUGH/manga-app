@@ -1,0 +1,16 @@
+<div xLayout="row" fxLayoutAlign="space-around">
+  <div fxLayout="row wrap" fxFlex.gt-lg="1140px" >
+    <div fxLayout="row" fxLayoutAlign="center center" fxFlex="100" class="navigation">
+      <mat-form-field>
+        <mat-select (selectionChange)="onChapterSelected()" [(ngModel)]="selectedChapter" *ngIf="chapterIndex>=0 && chapters.length>=0" >
+          <mat-option *ngFor="let chapter of chapters;let i = index" [value]="i">{{chapter}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <img [src]="image" *ngFor="let image of chapterImages" fxFlex="100" >
+    <div fxLayout="row" fxLayoutAlign="center center" fxFlex="100" class="navigation">
+      <button mat-button mat-stroked-button color="primary" [routerLink]="['/manga-chapter', chapterIndex-1]" [disabled]="chapterIndex<1">Previous</button>
+      <button mat-button mat-stroked-button color="primary" [routerLink]="['/manga-chapter', chapterIndex+1]" [disabled]="chapterIndex>109" >Next</button>
+    </div>
+  </div>
+</div>

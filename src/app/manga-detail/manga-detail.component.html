@@ -1,0 +1,25 @@
+<div fxLayout="row" fxLayoutAlign="space-around">
+  <div class="content" fxFlex.gt-xs="500px" fxFlex.gt-sm="800px" fxFlex.gt-md="1000px" fxFlex.gt-lg="1140px">
+    <mat-card class="example-card" [class.mat-elevation-z0]="true">
+
+      <img mat-card-image
+        src="https://vignette.wikia.nocookie.net/solo-leveling/images/0/07/Solo_Leveling_Webtoon_cover.png/revision/latest?cb=20190324041910"
+        alt="Photo of a Shiba Inu">
+      <mat-card-header>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-card-title>Solo Leveling</mat-card-title>
+        <mat-card-subtitle>Action, Fantasy</mat-card-subtitle>
+        <p>
+          Solo Leveling is a story about the weakest hunter Sung Jin-Woo and his quest to become the strongest, S-Rank
+          hunter.
+        </p>
+        <h1 class="mat-subheading-2">Chapters</h1>
+        <mat-list>
+          <mat-list-item *ngFor="let chapter;index as i of chapters" [routerLink]="['/manga-chapter', i]">{{chapter}}
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
