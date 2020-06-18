@@ -1,32 +1,25 @@
 # common base image for development and
-FROM node:10.15.3
+FROM node:12-alpine as buildContainer
 WORKDIR /app
 
-ARG SC_NPM_TOKEN
-ENV SC_NPM_TOKEN="${SC_NPM_TOKEN}"
-
 # dev image contains everything needed for testing, development and building
-FROM base AS development
-COPY . /app
-
-# install all dependencies and add source code
+COPY ./package.json ./package-lock.json /app/
 RUN npm install
-RUN npm install -g @angular/cli@9.1.8
+COPY . /app
+RUN npm run build:ssr
 
-# builder runs unit tests and linter, then builds production code
-FROM development as builder
-RUN npm run build:ssr --prod --output-path=dist
-# RUN ls -ls ../
-# RUN ls -ls .
-# RUN pwd
 
-# release includes bare minimum required to run the app, copied from builder
-FROM base AS release
-COPY --from=builder /app/dist /app/dist
-COPY --from=builder /app/package.json /app/
+FROM node:8-alpine
 
-ENV NODE_ENV "production"
-ENV PORT 3000
+WORKDIR /app
+# Copy dependency definitions
+COPY --from=buildContainer /app/package.json /app
+# COPY --from=buildContainer /app/server.js /app
 
-EXPOSE 3000
-CMD ["npm", "run ", "serve:ssr"]
+# Get all the code needed to run the app
+COPY --from=buildContainer /app/dist /app/dist
+# COPY --from=buildContainer /app/static /app/static
+COPY --from=buildContainer /app/dist-server /app/dist-server
+
+# Expose the port the app runs in
+EXPOSE 8080
