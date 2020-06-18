@@ -25,4 +25,4 @@ COPY --from=buildContainer /app/dist /app/dist
 EXPOSE 4000
 
 # Serve the app
-CMD ["npm", "run", "server"]
+CMD ["npm", "run", "serve:ssr"]
