@@ -1,3 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: manga-app
+data:
+  BUCKET_NAME: ${BUCKET_NAME}
+  API_URL: ${API_URL}
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -22,6 +30,17 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 4000
+          env:
+          - name: API_URL
+            valueFrom:
+              configMapKeyRef:
+                name: manga-app
+                key: API_URL
+          - name: BUCKET_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: manga-app
+                key: BUCKET_NAME
 ---
 apiVersion: v1
 kind: Service
@@ -37,3 +56,4 @@ spec:
   ports:
     - port: 4000
       targetPort: 4000
+

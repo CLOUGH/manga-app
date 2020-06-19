@@ -3,16 +3,22 @@ import 'zone.js/dist/zone-node';
 import { ngExpressEngine } from '@nguniversal/express-engine';
 import * as express from 'express';
 import { join } from 'path';
+import { Storage } from '@google-cloud/storage';
 
 import { AppServerModule } from './src/main.server';
 import { APP_BASE_HREF } from '@angular/common';
 import { existsSync, readdirSync } from 'fs';
+import { config } from 'dotenv';
 
 // The Express app is exported so that it can be used by serverless Functions.
 export function app() {
+  config();
   const server = express();
   const distFolder = join(process.cwd(), 'dist/manga-app/browser');
   const indexHtml = existsSync(join(distFolder, 'index.original.html')) ? 'index.original.html' : 'index';
+  // Creates a client from a Google service account key.
+  const storage = new Storage({ keyFilename: 'keys.json' });
+  const bucketName = process.env.BUCKET_NAME;
 
   // Our Universal express-engine (found @ https://github.com/angular/universal/tree/master/modules/express-engine)
   server.engine('html', ngExpressEngine({
@@ -29,48 +35,57 @@ export function app() {
     maxAge: '1y'
   }));
 
-  server.get('/chapter-images/:chapterIndex', (req, res, next) => {
-    const directoryPath = `C:/Users/clough/Projects/solo-leveling-scraper/chapters/Solo Leveling – Chapter ${req.params.chapterIndex}`;
-    const images = getChapterImages(req.params.chapterIndex, directoryPath);
-
-    res.json(images);
-  })
-
-  server.get('/chapters', (req, res, next) => {
-    const chapterDirectoryPath = 'C:/Users/clough/Projects/solo-leveling-scraper/chapters';
-
-    let chapters = readdirSync(chapterDirectoryPath);
-    chapters = chapters.sort((a, b) => {
-      return parseInt(a.match(/\d+$/)[0]) - parseInt(b.match(/\d+$/)[0]);
+  server.get('/chapters/:chapterIndex/images', (req, res, next) => {
+    storage.bucket(bucketName).getFiles({
+      prefix: `chapters/Solo Leveling – Chapter ${req.params.chapterIndex}/`,
+      autoPaginate: false
+    }).then(([files, text, meta]) => {
+      const images = files.sort((a, b) => {
+        return parseInt(a.name.match(/(\d+)\w{0,}\.\w+/)[1]) - parseInt(b.name.match(/(\d+)\w{0,}\.\w+/)[1]);
+      }).map(file => {
+        const imageName = file.name.split('/')[2];
+        return `/chapters/${req.params.chapterIndex}/images/${imageName}`;
+      });
+      res.json(images);
     });
 
+  });
 
-    res.json(chapters);
+  server.get('/chapters', (req, res, next) => {
+    storage.bucket(bucketName).getFiles({
+      prefix: `chapters/`,
+
+      autoPaginate: true
+    }).then(([files, text, meta]) => {
+      let chapters = [];
+      files.forEach((file) => {
+        const chapterName = file.name.split('/')[1];
+        const index = chapters.findIndex(chapter => {
+          return chapterName === chapter;
+        });
+        if (index < 0) {
+          chapters.push(chapterName);
+        }
+      });
+
+      chapters = chapters.sort((a, b) => {
+        return parseInt(a.match(/\d+$/)[0]) - parseInt(b.match(/\d+$/)[0]);
+      });
+      res.json(chapters);
+    });
   });
 
   server.get('/chapters/:chapterIndex/images/:imageName', (req, res, next) => {
-    const filePath = `C:/Users/clough/Projects/solo-leveling-scraper/chapters/Solo Leveling – Chapter ${req.params.chapterIndex}/${req.params.imageName}`;
-
-
-    res.sendFile(filePath);
+    const srcFilename = `chapters/Solo Leveling – Chapter ${req.params.chapterIndex}/${req.params.imageName}`;
+    storage.bucket(bucketName).file(srcFilename).download().then(value => {
+      res.send(value[0]);
+    });
   });
 
   // All regular routes use the Universal engine
   server.get('*', (req, res) => {
     res.render(indexHtml, { req, providers: [{ provide: APP_BASE_HREF, useValue: req.baseUrl }] });
   });
-
-
-
-  function getChapterImages(chapter, directoryPath) {
-    let images = readdirSync(directoryPath);
-    images = images.sort((a, b) => {
-      return parseInt(a.match(/(\d+)\w{0,}\.\w+/)[1]) - parseInt(b.match(/(\d+)\w{0,}\.\w+/)[1]);
-    }).map(image => {
-      return `/chapters/${chapter}/images/${image}`;
-    });
-    return images;
-  }
 
   return server;
 }
