@@ -17,7 +17,7 @@ export function app() {
   const distFolder = join(process.cwd(), 'dist/manga-app/browser');
   const indexHtml = existsSync(join(distFolder, 'index.original.html')) ? 'index.original.html' : 'index';
   // Creates a client from a Google service account key.
-  const storage = new Storage({ keyFilename: 'keys.json' });
+  const storage = new Storage({ keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS });
   const bucketName = process.env.BUCKET_NAME;
 
   // Our Universal express-engine (found @ https://github.com/angular/universal/tree/master/modules/express-engine)

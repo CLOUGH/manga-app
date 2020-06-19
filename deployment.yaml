@@ -24,13 +24,23 @@ spec:
         tier: web
         sha: ${SHORT_SHA}
     spec:
+      spec:
+      volumes:
+      - name: google-cloud-key
+        secret:
+          secretName: pubsub-key
       containers:
         - name: manga-app
           image: gcr.io/website-227817/manga-app:latest
+          volumeMounts:
+          - name: google-cloud-key
+            mountPath: /var/secrets/google
           imagePullPolicy: Always
           ports:
             - containerPort: 4000
           env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /var/secrets/google/key.json
           - name: API_URL
             valueFrom:
               configMapKeyRef:
