@@ -17,6 +17,7 @@ export function app() {
   const distFolder = join(process.cwd(), 'dist/manga-app/browser');
   const indexHtml = existsSync(join(distFolder, 'index.original.html')) ? 'index.original.html' : 'index';
   // Creates a client from a Google service account key.
+  console.log({GOOGLE_APPLICATION_CREDENTIALS: process.env.GOOGLE_APPLICATION_CREDENTIALS});
   const storage = new Storage({ keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS });
   const bucketName = process.env.BUCKET_NAME;
 
