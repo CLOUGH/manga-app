@@ -25,6 +25,8 @@ steps:
     - 'deployment.yaml'
   env:
     - 'SHORT_SHA=$SHORT_SHA'
+    - 'API_URL=${_API_URL}'
+    - 'BUCKET_NAME=${_BUCKET_NAME}'
 
 # Deploy application on kubernetes
 - name: 'gcr.io/cloud-builders/kubectl'
@@ -33,8 +35,6 @@ steps:
     - 'CLOUDSDK_COMPUTE_ZONE=${_COMPUTE_ZONE}'
     - 'CLOUDSDK_CONTAINER_CLUSTER=${_CONTAINER_CLUSTER}'
     - 'SHORT_SHA=$SHORT_SHA'
-    - 'API_URL=${_API_URL}'
-    - 'BUCKET_NAME=${_BUCKET_NAME}'
   args:
     - 'apply'
     - '-f'
