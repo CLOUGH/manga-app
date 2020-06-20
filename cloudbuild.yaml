@@ -16,6 +16,8 @@ steps:
   args:
     - 'push'
     - 'gcr.io/$PROJECT_ID/manga-app:latest'
+  env:
+    - 'API_URL=${_API_URL}'
 
 # generate new deployment yaml based on $SHORT_SHA
 - name: 'gcr.io/$PROJECT_ID/envsubst'
