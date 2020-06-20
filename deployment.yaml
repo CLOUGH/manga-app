@@ -35,6 +35,11 @@ spec:
           volumeMounts:
           - name: google-cloud-key
             mountPath: /var/secrets/google
+          resources:
+            requests:
+              cpu: "50m"
+            limits:
+              cpu: "100m"
           imagePullPolicy: Always
           ports:
             - containerPort: 4000
